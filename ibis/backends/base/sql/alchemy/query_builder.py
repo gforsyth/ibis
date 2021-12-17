@@ -321,10 +321,10 @@ class AlchemyUnion(Union):
 class AlchemyCompiler(Compiler):
     translator_class = AlchemyExprTranslator
     context_class = AlchemyContext
-    table_set_formatter_class = _AlchemyTableSetFormatter
-    select_builder_class = AlchemySelectBuilder
+    # table_set_formatter_class = _AlchemyTableSetFormatter
+    # select_builder_class = AlchemySelectBuilder
     select_class = AlchemySelect
-    union_class = AlchemyUnion
+    # union_class = AlchemyUnion
 
     @classmethod
     def to_sql(cls, expr, context=None, params=None, exists=False):
