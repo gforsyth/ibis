@@ -7,12 +7,29 @@ from .. import datatypes as dt
 from .. import rules as rlz
 from .. import types as ir
 from .core import BinaryOp, UnaryOp, ValueOp
+from .generic import Literal
 
 
 @public
 class NumericBinaryOp(BinaryOp):
     left = rlz.numeric
     right = rlz.numeric
+
+    # XXX: don't override validate this is gross
+    def _validate(self):
+        if (
+            isinstance(self.right._arg, Literal)
+            and not self.left.type() == self.right.type()
+        ):
+            # First determine casting precedence
+            new_type = dt.highest_precedence(
+                (self.left.type(), self.right.type())
+            )
+            if self.left.type() is new_type:
+                new_right_type = self.left.type()
+                new_right_value = self.right._arg.value
+                new_right = ir.literal(new_right_value, type=new_right_type)
+                self.right = new_right
 
 
 @public

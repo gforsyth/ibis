@@ -129,3 +129,35 @@ def test_too_many_args_not_allowed(dummy_op):
 def test_too_few_args_not_allowed(dummy_op):
     with pytest.raises(TypeError):
         dummy_op()
+
+
+@pytest.mark.parametrize(
+    "val, type1, type2",
+    [
+        (1, "int8", "int32"),
+        (1, "float32", "float32"),
+    ],
+)
+def test_upcast_literal(val, type1, type2):
+    t = ibis.table([("a", "int64")])
+    colexpr1 = t.a + ibis.literal(val, type=type1)
+    colexpr2 = t.a + ibis.literal(val, type=type2)
+
+    assert colexpr1.type() == colexpr2.type()
+    assert colexpr1.equals(colexpr2)
+
+
+@pytest.mark.parametrize(
+    "val, type1, type2",
+    [
+        (1, "int8", "float32"),
+        (1, "float64", "float32"),
+    ],
+)
+def test_dont_upcast_literal(val, type1, type2):
+    t = ibis.table([("a", "int64")])
+    colexpr1 = t.a + ibis.literal(val, type=type1)
+    colexpr2 = t.a + ibis.literal(val, type=type2)
+
+    assert colexpr1.type() != colexpr2.type()
+    assert not colexpr1.equals(colexpr2)

@@ -1342,6 +1342,21 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "pudb"
+version = "2022.1"
+description = "A full-screen, console-based Python debugger"
+category = "dev"
+optional = false
+python-versions = "~=3.6"
+
+[package.dependencies]
+jedi = ">=0.18,<1"
+packaging = ">=20.0"
+pygments = ">=2.7.4"
+urwid = ">=1.1.1"
+urwid_readline = "*"
+
+[[package]]
 name = "pure-sasl"
 version = "0.6.2"
 description = "Pure Python client SASL implementation"
@@ -1574,6 +1589,21 @@ pytest = ">=5.0"
 
 [package.extras]
 dev = ["pre-commit", "tox", "pytest-asyncio"]
+
+[[package]]
+name = "pytest-pudb"
+version = "0.7.0"
+description = "Pytest PuDB debugger integration"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pudb = "*"
+pytest = ">=2.0"
+
+[package.extras]
+dev = ["pexpect", "tox", "flake8"]
 
 [[package]]
 name = "pytest-randomly"
@@ -2126,6 +2156,28 @@ secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "cer
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
+name = "urwid"
+version = "2.1.2"
+description = "A full-featured console (xterm et al.) user interface library"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "urwid-readline"
+version = "0.13"
+description = "A textbox edit widget for urwid that supports readline shortcuts"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+urwid = "*"
+
+[package.extras]
+dev = ["black", "pytest"]
+
+[[package]]
 name = "watchdog"
 version = "2.1.6"
 description = "Filesystem events monitoring"
@@ -2184,7 +2236,7 @@ visualization = ["graphviz"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.11"
-content-hash = "c8a91bfe1596cd7cd1401544aac5d065bd7adf88ceb09d76dc11a50c30659f06"
+content-hash = "b7bbb484aa286fd8588c23dbd1faaeb84df32c88937786bd30de52cc0ecda067"
 
 [metadata.files]
 alabaster = [
@@ -3057,6 +3109,9 @@ ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
     {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
 ]
+pudb = [
+    {file = "pudb-2022.1.tar.gz", hash = "sha256:e827a4b489dcad561189535db6677becbf32164b2b44df00786eb2d5e00c587e"},
+]
 pure-sasl = [
     {file = "pure-sasl-0.6.2.tar.gz", hash = "sha256:53c1355f5da95e2b85b2cc9a6af435518edc20c81193faa0eea65fdc835138f4"},
     {file = "pure_sasl-0.6.2-py2-none-any.whl", hash = "sha256:edb33b1a46eb3c602c0166de0442c0fb41f5ac2bfccbde4775183b105ad89ab2"},
@@ -3216,6 +3271,10 @@ pytest-forked = [
 pytest-mock = [
     {file = "pytest-mock-3.6.1.tar.gz", hash = "sha256:40217a058c52a63f1042f0784f62009e976ba824c418cced42e88d5f40ab0e62"},
     {file = "pytest_mock-3.6.1-py3-none-any.whl", hash = "sha256:30c2f2cc9759e76eee674b81ea28c9f0b94f8f0445a1b87762cadf774f0df7e3"},
+]
+pytest-pudb = [
+    {file = "pytest-pudb-0.7.0.tar.gz", hash = "sha256:0ea87316d39c82163d340c28a168e08a163b8d3f484e60a53c9fd5eefe432c63"},
+    {file = "pytest_pudb-0.7.0-py2.py3-none-any.whl", hash = "sha256:21e96fc16f313a7bd75e1df1b151de8a721144318b0ae8350208d6554222005a"},
 ]
 pytest-randomly = [
     {file = "pytest-randomly-3.11.0.tar.gz", hash = "sha256:9f013b8c1923130f3d0a286fde56e1fc52cfb3547b8eedf2765c460cee979c7f"},
@@ -3696,6 +3755,12 @@ unidecode = [
 urllib3 = [
     {file = "urllib3-1.26.8-py2.py3-none-any.whl", hash = "sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed"},
     {file = "urllib3-1.26.8.tar.gz", hash = "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"},
+]
+urwid = [
+    {file = "urwid-2.1.2.tar.gz", hash = "sha256:588bee9c1cb208d0906a9f73c613d2bd32c3ed3702012f51efe318a3f2127eae"},
+]
+urwid-readline = [
+    {file = "urwid_readline-0.13.tar.gz", hash = "sha256:018020cbc864bb5ed87be17dc26b069eae2755cb29f3a9c569aac3bded1efaf4"},
 ]
 watchdog = [
     {file = "watchdog-2.1.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:9693f35162dc6208d10b10ddf0458cc09ad70c30ba689d9206e02cd836ce28a3"},
