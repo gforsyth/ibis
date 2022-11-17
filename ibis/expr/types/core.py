@@ -8,7 +8,8 @@ import toolz
 from public import public
 
 import ibis.common.graph as g
-import ibis.expr.operations as ops
+if TYPE_CHECKING:
+    import ibis.expr.operations as ops
 from ibis.common.exceptions import IbisError, IbisTypeError, TranslationError
 from ibis.common.grounds import Immutable
 from ibis.config import _default_backend, options

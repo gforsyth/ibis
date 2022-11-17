@@ -3,7 +3,6 @@ from __future__ import annotations
 from public import public
 
 import ibis.common.exceptions as com
-import ibis.expr.operations as ops
 from ibis.expr.types.core import Expr
 
 
@@ -43,6 +42,7 @@ class TopK(Analytic):
         """Convert the TopK operation to a table aggregation."""
         from ibis.expr.analysis import find_first_base_table
 
+        import ibis.expr.operations as ops
         op = self.op()
 
         arg_table = find_first_base_table(op.arg).to_expr()

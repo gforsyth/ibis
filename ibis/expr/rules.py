@@ -6,7 +6,6 @@ from itertools import product, starmap
 import ibis.common.exceptions as com
 import ibis.expr.datatypes as dt
 import ibis.expr.schema as sch
-import ibis.expr.types as ir
 import ibis.util as util
 from ibis.common.annotations import attribute, optional, variadic  # noqa: F401
 from ibis.common.validators import (  # noqa: F401
@@ -80,13 +79,15 @@ class rule(validator):
     __slots__ = ()
 
     def _erase_expr(self, value):
-        return value.op() if isinstance(value, ir.Expr) else value
+        try:
+            return value.op()
+        except AttributeError:
+            return value
 
     def __call__(self, *args, **kwargs):
         args = map(self._erase_expr, args)
         kwargs = {k: self._erase_expr(v) for k, v in kwargs.items()}
         result = super().__call__(*args, **kwargs)
-        assert not isinstance(result, ir.Expr)
         return result
 
 
@@ -469,6 +470,7 @@ def column_from(table_ref, column, **kwargs):
     passed.
     """
     import ibis.expr.operations as ops
+    import ibis.expr.types as ir
 
     # TODO(kszucs): should avoid converting to TableExpr
     table = table_ref(**kwargs).to_expr()

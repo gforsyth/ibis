@@ -32,7 +32,7 @@ class MapLength(Unary):
 class MapGet(Value):
     arg = rlz.mapping
     key = rlz.one_of([rlz.string, rlz.integer])
-    default = rlz.optional(rlz.any, default=null())
+    default = rlz.optional(rlz.any)
 
     output_shape = rlz.shape_like("args")
 

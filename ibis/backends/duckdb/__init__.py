@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import duckdb
+
 import ast
 import itertools
 import os
@@ -9,8 +11,8 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Mapping, MutableMapping
 
-import pyarrow as pa
-import pyarrow.types as pat
+#import pyarrow as pa
+#import pyarrow.types as pat
 import sqlalchemy as sa
 import toolz
 
@@ -20,12 +22,14 @@ from ibis.backends.base.sql.alchemy.datatypes import to_sqla_type
 if TYPE_CHECKING:
     import duckdb
 
+breakpoint()
 import ibis.expr.schema as sch
 import ibis.expr.types as ir
 from ibis.backends.base.sql.alchemy import BaseAlchemyBackend
-from ibis.backends.duckdb.compiler import DuckDBSQLCompiler
-from ibis.backends.duckdb.datatypes import parse
+#from ibis.backends.duckdb.compiler import DuckDBSQLCompiler
+#from ibis.backends.duckdb.datatypes import parse
 from ibis.common.dispatch import RegexDispatcher
+
 
 _generate_view_code = RegexDispatcher("_register")
 _dialect = sa.dialects.postgresql.dialect()
@@ -179,23 +183,23 @@ class Backend(BaseAlchemyBackend):
         >>> import ibis
         >>> ibis.duckdb.connect("database.ddb", threads=4, memory_limit="1GB")
         """
-        if path is not None:
-            warnings.warn(
-                "The `path` argument is deprecated in 4.0. Use `database=...` "
-                "instead."
-            )
-            database = path
-        if not (in_memory := database == ":memory:"):
-            database = Path(database).absolute()
-        super().do_connect(
-            sa.create_engine(
-                f"duckdb:///{database}",
-                connect_args=dict(read_only=read_only, config=config),
-                poolclass=sa.pool.SingletonThreadPool if in_memory else None,
-            )
-        )
-        self._meta = sa.MetaData(bind=self.con)
-        self._extensions = set()
+        # if path is not None:
+        #     warnings.warn(
+        #         "The `path` argument is deprecated in 4.0. Use `database=...` "
+        #         "instead."
+        #     )
+        #     database = path
+        # if not (in_memory := database == ":memory:"):
+        #     database = Path(database).absolute()
+        # super().do_connect(
+        #     sa.create_engine(
+        #         f"duckdb:///{database}",
+        #         connect_args=dict(read_only=read_only, config=config),
+        #         poolclass=sa.pool.SingletonThreadPool if in_memory else None,
+        #     )
+        # )
+        # self._meta = sa.MetaData(bind=self.con)
+        # self._extensions = set()
 
     def _load_extensions(self, extensions):
         for extension in extensions:
