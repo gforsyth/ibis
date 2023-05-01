@@ -364,6 +364,8 @@ services:
       ORACLE_DATABASE: ibis_testing
       APP_USER: ibis
       APP_USER_PASSWORD: ibis
+    volumes:
+      - oracle:/data
     ports:
       - 1521:1521
 
@@ -386,3 +388,4 @@ volumes:
   clickhouse:
   druid:
   mssql:
+  oracle:

@@ -58,6 +58,15 @@ class Backend(BaseAlchemyBackend):
         #
         # sqlplus ibis/ibis@localhost:1521/IBIS_TESTING
         # for connecting from docker exec
+        #
+        # for current session parameters
+        # select * from nls_session_parameters;
+        #
+        # alter session parameter e.g.
+        # alter session set nls_timestamp_format='YYYY-MM-DD HH24:MI:SS.FF3'
+        #
+        # see user tables
+        # select table_name from user_tables
 
         self.database_name = database  # not sure what should go here
 
@@ -65,8 +74,6 @@ class Backend(BaseAlchemyBackend):
             url,
             poolclass=sa.pool.StaticPool,
             connect_args={
-                "user": user,
-                "password": password,
                 "service_name": database,
             },
         )
@@ -74,31 +81,35 @@ class Backend(BaseAlchemyBackend):
         super().do_connect(engine)
 
     def _metadata(self, query: str) -> Iterable[tuple[str, dt.DataType]]:
-        query = f"EXPLAIN PLAN FOR {query}"
-        with self.begin() as con:
-            result = con.exec_driver_sql(query).scalar()
+        ...
 
-        (plan,) = json.loads(result)
-        return sch.Schema(
-            {column["name"]: odt.parse(column["type"]) for column in plan["signature"]}
-        )
 
-    def _get_temp_view_definition(
-        self, name: str, definition: sa.sql.compiler.Compiled
-    ) -> str:
-        raise NotImplementedError()
+#     def _metadata(self, query: str) -> Iterable[tuple[str, dt.DataType]]:
+#         query = f"EXPLAIN PLAN FOR {query}"
+#         with self.begin() as con:
+#             result = con.exec_driver_sql(query).scalar()
 
-    def _has_table(self, connection, table_name: str, schema) -> bool:
-        query = sa.text(
-            """\
-SELECT COUNT(*) > 0 as c
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_NAME = :table_name"""
-        ).bindparams(table_name=table_name)
+#         (plan,) = json.loads(result)
+#         return sch.Schema(
+#             {column["name"]: odt.parse(column["type"]) for column in plan["signature"]}
+#         )
 
-        return bool(connection.execute(query).scalar())
+#     def _get_temp_view_definition(
+#         self, name: str, definition: sa.sql.compiler.Compiled
+#     ) -> str:
+#         raise NotImplementedError()
 
-    def _get_sqla_table(
-        self, name: str, schema: str | None = None, autoload: bool = True, **kwargs: Any
-    ) -> sa.Table:
-        return super()._get_sqla_table(name, schema=schema, autoload=autoload, **kwargs)
+#     def _has_table(self, connection, table_name: str, schema) -> bool:
+#         query = sa.text(
+#             """\
+# SELECT COUNT(*) > 0 as c
+# FROM INFORMATION_SCHEMA.TABLES
+# WHERE TABLE_NAME = :table_name"""
+#         ).bindparams(table_name=table_name)
+
+#         return bool(connection.execute(query).scalar())
+
+#     def _get_sqla_table(
+#         self, name: str, schema: str | None = None, autoload: bool = True, **kwargs: Any
+#     ) -> sa.Table:
+#         return super()._get_sqla_table(name, schema=schema, autoload=autoload, **kwargs)

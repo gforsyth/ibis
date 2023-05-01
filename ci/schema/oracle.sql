@@ -1,9 +1,9 @@
-DROP TABLE diamonds;
-
 -- https://docs.oracle.com/database/121/DRDAS/data_type.htm#DRDAS264
 -- says that NUMBER(4) -> NUMBER(4)
 -- says that NUMBER(9) -> NUMBER(9)
--- says that BIGINT -> NUMBER(18)
+-- says that BIGINT -> NUMBER(18);
+
+DROP TABLE diamonds;
 
 CREATE TABLE diamonds (
     carat BINARY_FLOAT,
@@ -16,7 +16,7 @@ CREATE TABLE diamonds (
     x BINARY_FLOAT,
     y BINARY_FLOAT,
     z BINARY_FLOAT
-) ;
+);
 
 DROP TABLE batting;
 
@@ -70,9 +70,9 @@ CREATE TABLE functional_alltypes (
     bigint_col NUMBER(18),
     float_col BINARY_FLOAT,
     double_col BINARY_DOUBLE,
-    date_string_col VARCHAR(255),
+    date_string_col VARCHAR2(255),
     string_col VARCHAR2(255),
-    timestamp_col TIMESTAMP,
+    timestamp_col TIMESTAMP(3),
     year NUMBER(9),
     month NUMBER(9)
 );
@@ -86,3 +86,5 @@ INSERT INTO win VALUES
     ('a', 2, 0),
     ('a', 3, 1),
     ('a', 4, 1);
+
+COMMIT;

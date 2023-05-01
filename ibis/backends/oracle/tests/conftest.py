@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import contextlib
 import os
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -9,27 +11,45 @@ import sqlalchemy as sa
 from packaging.version import parse as parse_version
 
 import ibis
-from ibis.backends.conftest import TEST_TABLES, init_database
-from ibis.backends.tests.base import BackendTest, RoundHalfToEven
+from ibis.backends.conftest import TEST_TABLES
+from ibis.backends.tests.base import (
+    BackendTest,
+    RoundHalfToEven,
+    ServiceBackendTest,
+    ServiceSpec,
+)
 
-ORACLE_USER = os.environ.get('IBIS_TEST_ORACLE_USER', 'system')
+ORACLE_USER = os.environ.get('IBIS_TEST_ORACLE_USER', 'ibis')
 ORACLE_PASS = os.environ.get('IBIS_TEST_ORACLE_PASSWORD', 'ibis')
 ORACLE_HOST = os.environ.get('IBIS_TEST_ORACLE_HOST', 'localhost')
 ORACLE_PORT = int(os.environ.get('IBIS_TEST_ORACLE_PORT', 1521))
-IBIS_TEST_ORACLE_DB = os.environ.get('IBIS_TEST_ORACLE_DATABASE', 'ibis_testing')
+IBIS_TEST_ORACLE_DB = os.environ.get('IBIS_TEST_ORACLE_DATABASE', 'IBIS_TESTING')
 
 
-class TestConf(BackendTest, RoundHalfToEven):
+class TestConf(ServiceBackendTest, RoundHalfToEven):
     check_dtype = False
     supports_window_operations = False
     returned_timestamp_unit = 's'
     supports_arrays = False
-    supports_arrays_outside_of_select = supports_arrays
+    supports_arrays_outside_of_select = False
     native_bool = False
     supports_structs = False
 
     def __init__(self, data_directory: Path) -> None:
         super().__init__(data_directory)
+
+    @classmethod
+    def service_spec(cls, data_dir: Path):
+        files = [
+            data_dir.joinpath("csv", f"{name}.csv")
+            for name in ("diamonds", "batting", "awards_players", "functional_alltypes")
+        ]
+        ctl_files = [
+            data_dir.joinpath("..", "schema", "oracle", f"{name}.ctl")
+            for name in ("diamonds", "batting", "awards_players", "functional_alltypes")
+        ]
+        files += ctl_files
+        return ServiceSpec(name="oracle", data_volume="/opt/oracle/", files=files)
 
     @staticmethod
     def _load_data(
@@ -42,7 +62,7 @@ class TestConf(BackendTest, RoundHalfToEven):
         database: str = IBIS_TEST_ORACLE_DB,
         **_: Any,
     ) -> None:
-        """Load test data into a MySql backend instance.
+        """Load test data into a Oracle backend instance.
 
         Parameters
         ----------
@@ -51,67 +71,103 @@ class TestConf(BackendTest, RoundHalfToEven):
         script_dir
             Location of scripts defining schemas
         """
-        with open(script_dir / 'schema' / 'mysql.sql') as schema:
-            engine = init_database(
+        with open(script_dir / 'schema' / 'oracle.sql') as schema:
+            engine = init_oracle_database(
                 url=sa.engine.make_url(
-                    f"mysql+pymysql://{user}:{password}@{host}:{port:d}?local_infile=1",
+                    f"oracle+oracledb://{user}:{password}@{host}:{port:d}/{database}",
                 ),
                 database=database,
                 schema=schema,
-                isolation_level="AUTOCOMMIT",
-                recreate=False,
+                connect_args=dict(service_name=database),
             )
-            with engine.begin() as con:
-                for table in TEST_TABLES:
-                    csv_path = data_dir / "csv" / f"{table}.csv"
-                    lines = [
-                        f"LOAD DATA LOCAL INFILE {str(csv_path)!r}",
-                        f"INTO TABLE {table}",
-                        "COLUMNS TERMINATED BY ','",
-                        """OPTIONALLY ENCLOSED BY '"'""",
-                        "LINES TERMINATED BY '\\n'",
-                        "IGNORE 1 LINES",
-                    ]
-                    con.exec_driver_sql("\n".join(lines))
+
+        # then call sqlldr to ingest
+        for ctl_file in (
+            "diamonds.ctl",
+            "batting.ctl",
+            "awards_players.ctl",
+            "functional_alltypes.ctl",
+        ):
+            subprocess.check_call(
+                [
+                    "docker",
+                    "exec",
+                    "ibis-oracle-1",
+                    "sqlldr",
+                    "ibis/ibis@localhost:1521/IBIS_TESTING",
+                    f"control={ctl_file}",
+                ]
+            )
 
     @staticmethod
     def connect(_: Path):
-        return ibis.mysql.connect(
-            host=MYSQL_HOST,
-            user=MYSQL_USER,
-            password=MYSQL_PASS,
-            database=IBIS_TEST_MYSQL_DB,
-            port=MYSQL_PORT,
+        return ibis.oracle.connect(
+            host=ORACLE_HOST,
+            user=ORACLE_USER,
+            password=ORACLE_PASS,
+            database=IBIS_TEST_ORACLE_DB,
+            port=ORACLE_PORT,
         )
-
-
-@pytest.fixture(scope='session')
-def setup_privs():
-    engine = sa.create_engine(f"mysql+pymysql://root:@{MYSQL_HOST}:{MYSQL_PORT:d}")
-    with engine.begin() as con:
-        # allow the ibis user to use any database
-        con.exec_driver_sql("CREATE SCHEMA IF NOT EXISTS `test_schema`")
-        con.exec_driver_sql(
-            f"GRANT CREATE,SELECT,DROP ON `test_schema`.* TO `{MYSQL_USER}`@`%%`"
-        )
-    yield
-    with engine.begin() as con:
-        con.exec_driver_sql("DROP SCHEMA IF EXISTS `test_schema`")
 
 
 @pytest.fixture(scope='session')
 def con():
-    return ibis.mysql.connect(
-        host=MYSQL_HOST,
-        user=MYSQL_USER,
-        password=MYSQL_PASS,
-        database=IBIS_TEST_MYSQL_DB,
-        port=MYSQL_PORT,
+    return ibis.oracle.connect(
+        host=ORACLE_HOST,
+        user=ORACLE_USER,
+        password=ORACLE_PASS,
+        database=IBIS_TEST_ORACLE_DB,
+        port=ORACLE_PORT,
     )
 
 
-@pytest.fixture(scope='session')
-def con_nodb():
-    return ibis.mysql.connect(
-        host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASS, port=MYSQL_PORT
-    )
+def init_oracle_database(
+    url: sa.engine.url.URL,
+    database: str,
+    schema: TextIO | None = None,
+    **kwargs: Any,
+) -> sa.engine.Engine:
+    """Initialise `database` at `url` with `schema`.
+
+    If `recreate`, drop the `database` at `url`, if it exists.
+
+    Parameters
+    ----------
+    url : url.sa.engine.url.URL
+        Connection url to the database
+    database : str
+        Name of the database to be dropped
+    schema : TextIO
+        File object containing schema to use
+
+    Returns
+    -------
+    sa.engine.Engine
+        SQLAlchemy engine object
+    """
+    try:
+        url.database = database
+    except AttributeError:
+        url = url.set(database=database)
+
+    engine = sa.create_engine(url, **kwargs)
+
+    if schema:
+        with engine.begin() as conn:
+            for stmt in filter(
+                None,
+                map(str.strip, schema.read().split(';')),
+            ):
+                # XXX: maybe should just remove the comments in the sql file
+                # so we don't end up writing an entire parser here.
+                if not stmt.startswith("--"):
+                    # TODO: find a nicer way to do this (but for now, keep this
+                    # as a special case in the oracle conftest)
+                    # But srsly, why is there no `CREATE OR REPLACE TABLE`?
+                    if stmt.startswith("DROP TABLE"):
+                        with contextlib.suppress(sa.exc.DatabaseError):
+                            conn.exec_driver_sql(stmt)
+                    else:
+                        conn.exec_driver_sql(stmt)
+
+    return engine
