@@ -366,6 +366,16 @@ services:
       APP_USER_PASSWORD: ibis
     ports:
       - 1521:1521
+    healthcheck:
+      interval: 5s
+      retries: 20
+      test:
+        - CMD-SHELL
+        - >
+          sqlplus -F SYSTEM/ibis@localhost:1521/FREE <<< 'WHENEVER SQLERROR EXIT SQL.SQLCODE;
+          SELECT 1;'
+      timeout: 30s
+    restart: on-failure
     networks:
       - oracle
 
