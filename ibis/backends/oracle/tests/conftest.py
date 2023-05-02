@@ -4,16 +4,14 @@ import contextlib
 import os
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 import pytest
 import sqlalchemy as sa
-from packaging.version import parse as parse_version
 
 import ibis
 from ibis.backends.conftest import TEST_TABLES
 from ibis.backends.tests.base import (
-    BackendTest,
     RoundHalfToEven,
     ServiceBackendTest,
     ServiceSpec,
@@ -72,7 +70,7 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
             Location of scripts defining schemas
         """
         with open(script_dir / 'schema' / 'oracle.sql') as schema:
-            engine = init_oracle_database(
+            _ = init_oracle_database(
                 url=sa.engine.make_url(
                     f"oracle+oracledb://{user}:{password}@{host}:{port:d}/{database}",
                 ),

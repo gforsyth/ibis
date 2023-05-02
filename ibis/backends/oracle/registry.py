@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sqlalchemy as sa
-import toolz
 
 import ibis.expr.operations as ops
 from ibis.backends.base.sql.alchemy import (

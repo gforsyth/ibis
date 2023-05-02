@@ -359,7 +359,7 @@ services:
 
   oracle:
     image: gvenzl/oracle-free:23
-    environment: 
+    environment:
       ORACLE_PASSWORD: ibis
       ORACLE_DATABASE: ibis_testing
       APP_USER: ibis

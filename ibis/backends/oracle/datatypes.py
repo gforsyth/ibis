@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import parsy
 import sqlalchemy as sa
 from sqlalchemy.dialects import oracle
 from sqlalchemy.dialects.oracle.base import OracleDialect
@@ -8,7 +7,6 @@ from sqlalchemy.ext.compiler import compiles
 
 import ibis.expr.datatypes as dt
 import ibis.expr.schema as sch
-from ibis.common.parsing import spaceless_string
 
 
 @dt.dtype.register(OracleDialect, oracle.ROWID)
