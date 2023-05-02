@@ -16,27 +16,25 @@ operation_registry = sqlalchemy_operation_registry.copy()
 operation_registry.update(sqlalchemy_window_functions_registry)
 
 
-def _sign(t, op):
-    arg = op.arg
-    cond1 = ops.Where(ops.Greater(arg, 0), 1, -1)
-    cond2 = ops.Where(ops.Equals(arg, 0), 0, cond1)
-    return t.translate(cond2)
+def _cot(t, op):
+    arg = t.translate(op.arg)
+    return 1.0 / sa.func.tan(arg, type_=t.get_sqla_type(op.arg.output_dtype))
 
 
-def _join(t, op):
-    sep = t.translate(op.sep)
-    values = list(map(t.translate, op.arg))
-    return sa.func.concat(*toolz.interpose(sep, values))
+operation_registry.update(
+    {
+        ops.Log2: unary(lambda arg: sa.func.log(2, arg)),
+        ops.Log10: unary(lambda arg: sa.func.log(10, arg)),
+        ops.Log: fixed_arity(lambda arg, base: sa.func.log(base, arg), 2),
+        ops.Power: fixed_arity(sa.func.power, 2),
+        ops.Cot: _cot,
+        ops.Pi: lambda *_: sa.func.ACOS(-1),
+        ops.Degrees: lambda t, op: 180 * t.translate(op.arg) / t.translate(ops.Pi()),
+        ops.Radians: lambda t, op: t.translate(ops.Pi()) * t.translate(op.arg) / 180,
+    }
+)
 
-
-operation_registry.update({})
-
-_invalid_operations = {
-    # ibis.expr.operations.generic
-    ops.RandomScalar,
-    # ibis.expr.operations.strings
-    ops.StringAscii,
-}
+_invalid_operations = {}
 
 operation_registry = {
     k: v for k, v in operation_registry.items() if k not in _invalid_operations

@@ -16,17 +16,18 @@ def sa_oracle_rowid(_, satype, nullable=False):
     return dt.String(nullable=nullable)
 
 
-# def parse(text: str) -> dt.DataType:
-#     """Parse a Druid type into an ibis data type."""
-#     primitive = (
-#         spaceless_string("varchar2").result(dt.string)
-#         | spaceless_string("binarydouble").result(dt.float64)
-#         | spaceless_string("binaryfloat").result(dt.float32)
-#         | spaceless_string("long").result(dt.int64)
-#         | spaceless_string("rowid").result(dt.string)
-#     )
+@dt.dtype.register(OracleDialect, sa.Numeric)
+def sa_oracle_numeric(_, satype, nullable=True):
+    if (scale := satype.scale) == 0:
+        # kind of a lie, should be int128 because 38 digits
+        return dt.Int64(nullable=nullable)
+    return dt.Decimal(
+        precision=satype.precision or 38,
+        scale=scale or 0,
+        nullable=nullable,
+    )
 
-#     ty = parsy.forward_declaration()
 
-#     ty.become(primitive)
-#     return ty.parse(text)
+@dt.dtype.register(OracleDialect, (sa.REAL, sa.FLOAT, sa.Float))
+def dtype(_, satype, nullable=True):
+    return dt.Float64(nullable=nullable)
