@@ -10,7 +10,6 @@ import pytest
 import sqlalchemy as sa
 
 import ibis
-from ibis.backends.conftest import TEST_TABLES
 from ibis.backends.tests.base import (
     RoundHalfToEven,
     ServiceBackendTest,
@@ -21,7 +20,6 @@ ORACLE_USER = os.environ.get('IBIS_TEST_ORACLE_USER', 'ibis')
 ORACLE_PASS = os.environ.get('IBIS_TEST_ORACLE_PASSWORD', 'ibis')
 ORACLE_HOST = os.environ.get('IBIS_TEST_ORACLE_HOST', 'localhost')
 ORACLE_PORT = int(os.environ.get('IBIS_TEST_ORACLE_PORT', 1521))
-IBIS_TEST_ORACLE_DB = os.environ.get('IBIS_TEST_ORACLE_DATABASE', 'IBIS_TESTING')
 
 
 class TestConf(ServiceBackendTest, RoundHalfToEven):
@@ -57,7 +55,6 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
         password: str = ORACLE_PASS,
         host: str = ORACLE_HOST,
         port: int = ORACLE_PORT,
-        database: str = IBIS_TEST_ORACLE_DB,
         **_: Any,
     ) -> None:
         """Load test data into a Oracle backend instance.
@@ -69,6 +66,21 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
         script_dir
             Location of scripts defining schemas
         """
+        database = "IBIS_TESTING"
+        with contextlib.suppress(Exception):
+            subprocess.check_call(
+                [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "oracle",
+                    "./createAppUser",
+                    user,
+                    password,
+                    database,
+                ]
+            )
+
         with open(script_dir / 'schema' / 'oracle.sql') as schema:
             _ = init_oracle_database(
                 url=sa.engine.make_url(
@@ -89,10 +101,11 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
             subprocess.check_call(
                 [
                     "docker",
+                    "compose",
                     "exec",
-                    "ibis-oracle-1",
+                    "oracle",
                     "sqlldr",
-                    f"{user}/{password}@{host}:{port}/{ database }",
+                    f"{user}/{password}@{host}:{port}/{database}",
                     f"control={ctl_file}",
                 ]
             )
@@ -103,7 +116,7 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
             host=ORACLE_HOST,
             user=ORACLE_USER,
             password=ORACLE_PASS,
-            database=IBIS_TEST_ORACLE_DB,
+            database="IBIS_TESTING",
             port=ORACLE_PORT,
         )
 
@@ -114,7 +127,7 @@ def con():
         host=ORACLE_HOST,
         user=ORACLE_USER,
         password=ORACLE_PASS,
-        database=IBIS_TEST_ORACLE_DB,
+        database="IBIS_TESTING",
         port=ORACLE_PORT,
     )
 
