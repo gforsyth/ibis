@@ -50,6 +50,12 @@ class Backend(BaseAlchemyBackend):
             f"oracle+oracledb://{user}:{password}@{host}:{port}/{database}"
         )
 
+        # Creating test DB and user
+        # The ORACLE_DB env-var needs to be set in the docker-compose.yml file
+        # Then, after the container is running, exec in and run (from `/opt/oracle`)
+        # ./createAppUser user pass ORACLE_DB
+        # where ORACLE_DB is the same name you used in the docker-compose file.
+
         # ORACLE IS VERY CONFUSING
         # SID -- instance identifier -- meant to distinguish oracle instances running on the same machine
         # TABLESPACE -- logical grouping of tables and views, unclear how different from DATABASE
