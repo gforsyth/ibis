@@ -144,6 +144,12 @@ jobs:
               - druid
             services:
               - druid
+          - name: oracle
+            title: oracle
+            extras:
+              - oracle
+            services:
+              - oracle
         exclude:
           - os: windows-latest
             backend:
