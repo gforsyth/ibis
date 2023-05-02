@@ -17,7 +17,7 @@ from ibis.backends.oracle.datatypes import dt as odt  # noqa: F401
 class Backend(BaseAlchemyBackend):
     name = 'oracle'
     compiler = OracleCompiler
-    supports_create_or_replace = True
+    supports_create_or_replace = False
 
     def do_connect(
         self,
@@ -80,4 +80,18 @@ class Backend(BaseAlchemyBackend):
         super().do_connect(engine)
 
     def _metadata(self, query: str) -> Iterable[tuple[str, dt.DataType]]:
-        ...
+        if not query.endswith("rows only"):
+            query = f"{query.strip(';')} fetch next 1 rows only"
+        with self.begin() as con, con.connection.cursor() as cur:
+            result = cur.execute(query)
+            desc = result.description
+
+        for name, type_code, _, _, precision, scale, is_nullable in desc:
+            if precision is not None and scale is not None and precision != 0:
+                typ = dt.Decimal(precision=precision, scale=scale, nullable=is_nullable)
+            elif precision == 0:
+                # TODO: how to disambiguate between int and float here without inspecting the value?
+                typ = dt.float
+            else:
+                typ = parse(FIELD_ID_TO_NAME[type_code]).copy(nullable=is_nullable)
+            yield name, typ
