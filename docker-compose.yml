@@ -366,6 +366,8 @@ services:
       APP_USER_PASSWORD: ibis
     ports:
       - 1521:1521
+    networks:
+      - oracle
 
 networks:
   impala:
@@ -375,6 +377,7 @@ networks:
   postgres:
   trino:
   druid:
+  oracle:
 
 volumes:
   metadata_data:
