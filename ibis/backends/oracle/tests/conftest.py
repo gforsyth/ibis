@@ -92,7 +92,7 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
                     "exec",
                     "ibis-oracle-1",
                     "sqlldr",
-                    "ibis/ibis@localhost:1521/IBIS_TESTING",
+                    f"{user}/{password}@{host}:{port}/{ database }",
                     f"control={ctl_file}",
                 ]
             )
