@@ -3,4 +3,4 @@ load data
   infile '/opt/oracle/diamonds.csv'
   into table diamonds
   fields terminated by "," optionally enclosed by '"'
-  ( carat, cut, color, clarity, depth, "table", price, x, y, z )
+  ( "carat", "cut", "color", "clarity", "depth", "table", "price", "x", "y", "z" )

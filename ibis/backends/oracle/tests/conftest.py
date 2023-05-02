@@ -120,6 +120,26 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
             port=ORACLE_PORT,
         )
 
+    @property
+    def functional_alltypes(self) -> ir.Table:
+        return self.connection.table('FUNCTIONAL_ALLTYPES')
+
+    @property
+    def batting(self) -> ir.Table:
+        return self.connection.table('BATTING')
+
+    @property
+    def awards_players(self) -> ir.Table:
+        return self.connection.table('AWARDS_PLAYERS')
+
+    @property
+    def diamonds(self) -> ir.Table:
+        return self.connection.table('DIAMONDS')
+
+    @property
+    def win(self) -> ir.Table | None:
+        return self.connection.table("WIN")
+
 
 @pytest.fixture(scope='session')
 def con():

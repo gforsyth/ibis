@@ -4,4 +4,4 @@ load data
   into table awards_players
   fields terminated by "," optionally enclosed by '"'
   TRAILING NULLCOLS
-  ( "playerID", "awardID", "yearID", "lgID", tie, notes )
+  ( "playerID", "awardID", "yearID", "lgID", "tie", "notes" )

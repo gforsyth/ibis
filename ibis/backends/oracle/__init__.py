@@ -18,6 +18,8 @@ class Backend(BaseAlchemyBackend):
     name = 'oracle'
     compiler = OracleCompiler
     supports_create_or_replace = False
+    _quote_column_names = True
+    _quote_table_names = True
 
     def do_connect(
         self,
@@ -77,7 +79,20 @@ class Backend(BaseAlchemyBackend):
             },
         )
 
-        super().do_connect(engine)
+        res = super().do_connect(engine)
+
+        def normalize_name(name):
+            if name is None:
+                return None
+            elif not name:
+                return ""
+            elif name.lower() == name:
+                return sa.sql.quoted_name(name, quote=True)
+            else:
+                return name
+
+        self.con.dialect.normalize_name = normalize_name
+        return res
 
     def _metadata(self, query: str) -> Iterable[tuple[str, dt.DataType]]:
         if not query.endswith("rows only"):

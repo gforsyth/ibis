@@ -192,6 +192,9 @@ def test_mutate_then_join_no_column_overlap(batting, awards_players):
     reason="pyspark doesn't support joining on differing column names",
 )
 @pytest.mark.notyet(["dask"], reason="dask doesn't support descending order by")
+@pytest.mark.broken(
+    ["oracle"], reason='"TO"."YEAR" must appear in the GROUP BY clause...'
+)
 def test_semi_join_topk(batting, awards_players):
     batting = batting.mutate(year=batting.yearID)
     left = batting.semi_join(batting.year.topk(5), "year").select("year", "RBI")
