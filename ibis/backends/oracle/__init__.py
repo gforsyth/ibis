@@ -11,6 +11,7 @@ import ibis.expr.datatypes as dt
 import ibis.expr.schema as sch
 from ibis.backends.base.sql.alchemy import BaseAlchemyBackend
 from ibis.backends.oracle.compiler import OracleCompiler
+from ibis.backends.oracle.datatypes import dt as odt  # noqa: F401
 
 
 class Backend(BaseAlchemyBackend):
