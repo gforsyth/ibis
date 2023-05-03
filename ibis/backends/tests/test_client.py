@@ -1026,6 +1026,7 @@ def test_set_backend_url(url, monkeypatch):
 @pytest.mark.notimpl(
     ["snowflake"], reason="scale not implemented in ibis's snowflake backend"
 )
+@pytest.mark.broken(["oracle"], reason="oracle doesn't like `DESCRIBE` from sqlalchemy")
 @pytest.mark.broken(["druid"], reason="sqlalchemy dialect is broken")
 def test_create_table_timestamp(con, temp_table):
     schema = ibis.schema(

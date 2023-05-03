@@ -34,6 +34,12 @@ def _corr(t, op):
     return t._reduction(sa.func.corr, op)
 
 
+def _second(t, op):
+    # Oracle returns fractional seconds, so `floor` the result to match
+    # the behavior of other backends
+    return sa.func.floor(sa.extract("SECOND", t.translate(op.arg)))
+
+
 operation_registry.update(
     {
         ops.Log2: unary(lambda arg: sa.func.log(2, arg)),
@@ -48,6 +54,8 @@ operation_registry.update(
         ops.Covariance: _cov,
         ops.Correlation: _corr,
         ops.ApproxMedian: reduction(lambda arg: sa.func.median(arg)),
+        # Temporal
+        ops.ExtractSecond: _second,
     }
 )
 
