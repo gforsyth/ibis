@@ -1416,11 +1416,6 @@ def test_clip(backend, alltypes, df, ibis_func, pandas_func):
     raises=pd.errors.IntCastingNaNError,
     reason="Cannot convert non-finite values (NA or inf) to integer",
 )
-@pytest.mark.broken(
-    ["oracle"],
-    raises=sa.exc.DatabaseError,
-    reason="Window functions are not allowed here.",
-)
 def test_histogram(con, alltypes):
     n = 10
     results = con.execute(alltypes.int_col.histogram(n).name("tmp"))
