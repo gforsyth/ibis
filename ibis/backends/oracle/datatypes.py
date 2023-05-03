@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import oracledb
 import sqlalchemy as sa
 from sqlalchemy.dialects import oracle
 from sqlalchemy.dialects.oracle.base import OracleDialect
@@ -9,8 +10,7 @@ from sqlalchemy.ext.compiler import compiles
 
 import ibis.expr.datatypes as dt
 import ibis.expr.schema as sch
-
-import oracledb
+from ibis.backends.base.sql.alchemy import to_sqla_type
 
 if TYPE_CHECKING:
     from oracle.base_impl import DbType
@@ -36,6 +36,22 @@ def sa_oracle_numeric(_, satype, nullable=True):
 @dt.dtype.register(OracleDialect, (sa.REAL, sa.FLOAT, sa.Float))
 def dtype(_, satype, nullable=True):
     return dt.Float64(nullable=nullable)
+
+
+@to_sqla_type.register(OracleDialect, dt.Float64)
+def oracle_sa_float64(_, itype):
+    # XXX: what should `binary_precision` equal?
+    return sa.Float(precision=53).with_variant(
+        oracle.FLOAT(binary_precision=14), 'oracle'
+    )
+
+
+@to_sqla_type.register(OracleDialect, dt.Float32)
+def oracle_sa_float32(_, itype):
+    # XXX: what should `binary_precision` equal?
+    return sa.Float(precision=53).with_variant(
+        oracle.FLOAT(binary_precision=7), 'oracle'
+    )
 
 
 _ORACLE_TYPES = {
