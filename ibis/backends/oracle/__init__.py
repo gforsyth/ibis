@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Any, Iterable
 
 import sqlalchemy as sa
@@ -9,9 +10,24 @@ from sqlalchemy.dialects import oracle
 
 import ibis.expr.datatypes as dt
 import ibis.expr.schema as sch
-from ibis.backends.base.sql.alchemy import BaseAlchemyBackend
-from ibis.backends.oracle.compiler import OracleCompiler
+from ibis.backends.base.sql.alchemy import (
+    AlchemyCompiler,
+    AlchemyExprTranslator,
+    BaseAlchemyBackend,
+)
 from ibis.backends.oracle.datatypes import dt as odt  # noqa: F401
+from ibis.backends.oracle.registry import operation_registry
+
+
+class OracleExprTranslator(AlchemyExprTranslator):
+    _registry = operation_registry.copy()
+    _rewrites = AlchemyExprTranslator._rewrites.copy()
+    _dialect_name = "oracle"
+    _has_reduction_filter_syntax = False
+
+
+class OracleCompiler(AlchemyCompiler):
+    translator_class = OracleExprTranslator
 
 
 class Backend(BaseAlchemyBackend):
@@ -83,7 +99,16 @@ class Backend(BaseAlchemyBackend):
             connect_args={
                 "service_name": database,
             },
+            isolation_level="READ COMMITTED",
         )
+
+        @sa.event.listens_for(engine, "connect")
+        def connect(dbapi_connection, connection_record):
+            with dbapi_connection.cursor() as cur:
+                try:
+                    cur.execute("COMMIT")
+                except sa.exc.OperationalError:
+                    warnings.warn("RUH ROH NO COMMIT")
 
         res = super().do_connect(engine)
 
@@ -116,3 +141,26 @@ class Backend(BaseAlchemyBackend):
             else:
                 typ = parse(FIELD_ID_TO_NAME[type_code]).copy(nullable=is_nullable)
             yield name, typ
+
+    def _table_from_schema(
+        self,
+        name: str,
+        schema: sch.Schema,
+        database: str | None = None,
+        temp: bool = False,
+    ) -> sa.Table:
+        table = super()._table_from_schema(
+            name, schema=schema, database=database, temp=True
+        )
+        if temp:
+            # Oracle complains about this missing `GLOBAL` keyword so we add it
+            # in here.  Not sure if this is always necessary or only some of the
+            # time
+            table._prefixes.insert(0, "GLOBAL")
+        return table
+
+    # TODO: figure out when/how oracle drops temp tables
+    # def list_tables(self, like=None, database=None):
+    #     tables = self.inspector.get_table_names(schema=database)
+    #     views = self.inspector.get_view_names(schema=database)
+    #     return self._filter_with_like(tables + views, like)
