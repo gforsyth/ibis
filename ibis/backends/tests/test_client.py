@@ -102,13 +102,19 @@ def test_query_schema(ddl_backend, expr_fn, expected):
     assert schema.equals(expected)
 
 
+_LIMIT = {
+    "oracle": "FETCH FIRST 10 ROWS ONLY",
+}
+
+
 @pytest.mark.notimpl(["datafusion", "snowflake", "polars", "mssql"])
 @pytest.mark.notyet(["sqlite"])
 @pytest.mark.never(["dask", "pandas"], reason="dask and pandas do not support SQL")
 def test_sql(backend, con):
     # execute the expression using SQL query
     table = backend.format_table("functional_alltypes")
-    expr = con.sql(f"SELECT * FROM {table} LIMIT 10")
+    limit = _LIMIT.get(backend.name(), "LIMIT 10")
+    expr = con.sql(f"SELECT * FROM {table} {limit}")
     result = expr.execute()
     assert len(result) == 10
 

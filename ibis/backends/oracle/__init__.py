@@ -7,6 +7,7 @@ from typing import Any, Iterable
 
 import sqlalchemy as sa
 
+import ibis.backends.oracle.datatypes as odt
 import ibis.expr.datatypes as dt
 import ibis.expr.operations as ops
 import ibis.expr.schema as sch
@@ -15,7 +16,6 @@ from ibis.backends.base.sql.alchemy import (
     AlchemyExprTranslator,
     BaseAlchemyBackend,
 )
-from ibis.backends.oracle.datatypes import dt as odt  # noqa: F401
 from ibis.backends.oracle.registry import operation_registry
 
 
@@ -139,8 +139,7 @@ class Backend(BaseAlchemyBackend):
         return res
 
     def _metadata(self, query: str) -> Iterable[tuple[str, dt.DataType]]:
-        if not query.endswith("rows only"):
-            query = f"{query.strip(';')} fetch next 1 rows only"
+        query = f"SELECT * FROM ({query.strip(';')}) FETCH FIRST 0 ROWS ONLY"
         with self.begin() as con, con.connection.cursor() as cur:
             result = cur.execute(query)
             desc = result.description
@@ -152,7 +151,7 @@ class Backend(BaseAlchemyBackend):
                 # TODO: how to disambiguate between int and float here without inspecting the value?
                 typ = dt.float
             else:
-                typ = parse(FIELD_ID_TO_NAME[type_code]).copy(nullable=is_nullable)
+                typ = odt.parse(type_code).copy(nullable=is_nullable)
             yield name, typ
 
     def _table_from_schema(
