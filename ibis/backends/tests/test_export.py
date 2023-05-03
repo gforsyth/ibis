@@ -273,6 +273,7 @@ def test_table_to_csv(tmp_path, backend, awards_players):
                     ["druid", "duckdb", "snowflake", "trino"],
                     raises=sa.exc.ProgrammingError,
                 ),
+                pytest.mark.notyet(["oracle"], raises=sa.exc.DatabaseError),
                 pytest.mark.notyet(["dask"], raises=NotImplementedError),
                 pytest.mark.notyet(["mssql", "mysql"], raises=sa.exc.OperationalError),
                 pytest.mark.notyet(["pyspark"], raises=ParseException),
