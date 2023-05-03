@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlalchemy as sa
+import toolz
 
 import ibis.expr.operations as ops
 from ibis.backends.base.sql.alchemy import (
@@ -40,6 +41,12 @@ def _second(t, op):
     return sa.func.floor(sa.extract("SECOND", t.translate(op.arg)))
 
 
+def _string_join(t, op):
+    sep = t.translate(op.sep)
+    values = list(map(t.translate, op.arg))
+    return sa.func.concat(*toolz.interpose(sep, values))
+
+
 operation_registry.update(
     {
         ops.Log2: unary(lambda arg: sa.func.log(2, arg)),
@@ -56,10 +63,15 @@ operation_registry.update(
         ops.ApproxMedian: reduction(lambda arg: sa.func.median(arg)),
         # Temporal
         ops.ExtractSecond: _second,
+        # String
+        ops.StrRight: fixed_arity(lambda arg, nchars: sa.func.substr(arg, -nchars), 2),
+        ops.StringJoin: _string_join,
     }
 )
 
-_invalid_operations = {}
+_invalid_operations = {
+    ops.StringFind,
+}
 
 operation_registry = {
     k: v for k, v in operation_registry.items() if k not in _invalid_operations
