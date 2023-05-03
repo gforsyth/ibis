@@ -941,7 +941,6 @@ def test_memtable_construct(backend, con, monkeypatch):
     backend.assert_frame_equal(t.execute(), pa_t.to_pandas())
 
 
-@pytest.mark.notimpl(["oracle"])
 @pytest.mark.notimpl(
     ["dask", "datafusion", "pandas", "polars"],
     raises=NotImplementedError,
