@@ -1363,7 +1363,6 @@ def test_sa_default_numeric_precision_and_scale(
 @pytest.mark.notimpl(
     ["dask", "pandas", "polars", 'druid'], raises=com.OperationNotDefinedError
 )
-@pytest.mark.notyet(["oracle"], raises=sa.exc.DatabaseError)
 def test_random(con):
     expr = ibis.random()
     result = con.execute(expr)

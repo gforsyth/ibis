@@ -55,6 +55,7 @@ operation_registry.update(
         ops.Power: fixed_arity(sa.func.power, 2),
         ops.Cot: _cot,
         ops.Pi: lambda *_: sa.func.ACOS(-1),
+        ops.RandomScalar: fixed_arity(sa.func.dbms_random.value, 0),
         ops.Degrees: lambda t, op: 180 * t.translate(op.arg) / t.translate(ops.Pi()),
         ops.Radians: lambda t, op: t.translate(ops.Pi()) * t.translate(op.arg) / 180,
         # Aggregate Functions
@@ -73,7 +74,6 @@ operation_registry.update(
 
 _invalid_operations = {
     ops.StringFind,
-    ops.RandomScalar,
 }
 
 operation_registry = {
