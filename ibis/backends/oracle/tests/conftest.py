@@ -68,7 +68,7 @@ class TestConf(BackendTest, RoundHalfToEven):
             )
 
         with open(script_dir / 'schema' / 'oracle.sql') as schema:
-            _ = init_oracle_database(
+            init_oracle_database(
                 url=sa.engine.make_url(
                     f"oracle+oracledb://{user}:{password}@{host}:{port:d}/{database}",
                 ),
