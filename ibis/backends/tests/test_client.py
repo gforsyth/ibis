@@ -435,6 +435,7 @@ def test_list_databases(alchemy_con):
         "duckdb": {"information_schema", "main"},
         "snowflake": {"IBIS_TESTING"},
         "trino": {"default"},
+        "oracle": set(),
     }
     assert test_databases[alchemy_con.name] <= set(alchemy_con.list_databases())
 
