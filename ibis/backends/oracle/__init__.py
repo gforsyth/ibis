@@ -50,8 +50,6 @@ class Backend(BaseAlchemyBackend):
     name = 'oracle'
     compiler = OracleCompiler
     supports_create_or_replace = False
-    _quote_column_names = True
-    _quote_table_names = True
 
     def do_connect(
         self,
