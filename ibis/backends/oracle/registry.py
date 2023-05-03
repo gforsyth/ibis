@@ -47,6 +47,7 @@ operation_registry.update(
         # Aggregate Functions
         ops.Covariance: _cov,
         ops.Correlation: _corr,
+        ops.ApproxMedian: reduction(lambda arg: sa.func.median(arg)),
     }
 )
 
