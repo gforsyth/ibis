@@ -92,6 +92,7 @@ class TestConf(BackendTest, RoundHalfToEven):
                         f"{user}/{password}@{host}:{port:d}/{database}",
                         f"control=ctl/{ctl_file.name}",
                     ],
+                    stdout=subprocess.DEVNULL,
                 )
                 for ctl_file in script_dir.joinpath("schema", "oracle").glob("*.ctl")
             ):
