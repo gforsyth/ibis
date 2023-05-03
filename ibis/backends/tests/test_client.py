@@ -441,7 +441,7 @@ def test_list_databases(alchemy_con):
 
 
 @pytest.mark.never(
-    ["bigquery", "postgres", "mssql", "mysql", "snowflake"],
+    ["bigquery", "postgres", "mssql", "mysql", "snowflake", "oracle"],
     reason="backend does not support client-side in-memory tables",
     raises=(sa.exc.OperationalError, TypeError),
 )
