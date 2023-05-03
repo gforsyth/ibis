@@ -28,6 +28,7 @@ class OracleExprTranslator(AlchemyExprTranslator):
 
 class OracleCompiler(AlchemyCompiler):
     translator_class = OracleExprTranslator
+    support_values_syntax_in_select = False
 
 
 class Backend(BaseAlchemyBackend):
@@ -150,7 +151,7 @@ class Backend(BaseAlchemyBackend):
         temp: bool = False,
     ) -> sa.Table:
         table = super()._table_from_schema(
-            name, schema=schema, database=database, temp=True
+            name, schema=schema, database=database, temp=temp
         )
         if temp:
             # Oracle complains about this missing `GLOBAL` keyword so we add it
