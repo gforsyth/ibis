@@ -181,6 +181,7 @@ def test_create_temporary_table_from_schema(tmpcon, new_schema):
         "duckdb",
         "mysql",
         "pandas",
+        "oracle",
         "postgres",
         "sqlite",
         "snowflake",
