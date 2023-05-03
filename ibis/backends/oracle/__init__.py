@@ -6,9 +6,9 @@ import warnings
 from typing import Any, Iterable
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import oracle
 
 import ibis.expr.datatypes as dt
+import ibis.expr.operations as ops
 import ibis.expr.schema as sch
 from ibis.backends.base.sql.alchemy import (
     AlchemyCompiler,
@@ -24,6 +24,18 @@ class OracleExprTranslator(AlchemyExprTranslator):
     _rewrites = AlchemyExprTranslator._rewrites.copy()
     _dialect_name = "oracle"
     _has_reduction_filter_syntax = False
+    _require_order_by = (
+        *AlchemyExprTranslator._require_order_by,
+        ops.Reduction,
+        ops.Lag,
+        ops.Lead,
+    )
+
+    _forbids_frame_clause = (
+        *AlchemyExprTranslator._forbids_frame_clause,
+        ops.Lag,
+        ops.Lead,
+    )
 
 
 class OracleCompiler(AlchemyCompiler):
