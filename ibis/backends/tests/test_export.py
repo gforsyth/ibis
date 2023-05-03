@@ -202,6 +202,7 @@ def test_table_to_parquet(tmp_path, backend, awards_players):
         "datafusion",
         "mssql",
         "mysql",
+        "oracle",
         "pandas",
         "polars",
         "postgres",
