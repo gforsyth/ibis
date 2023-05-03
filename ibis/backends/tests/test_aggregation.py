@@ -192,11 +192,6 @@ def test_aggregate(backend, alltypes, df, result_fn, expected_fn):
     ('result_fn', 'expected_fn'),
     aggregate_test_params + make_argidx_params(argidx_grouped_marks),
 )
-@pytest.mark.broken(
-    "oracle",
-    raises=sa.exc.DatabaseError,
-    reason="ORA-00979: 'T0'.'X': must appear in the GROUP BY clause or be used in an aggregate function",
-)
 def test_aggregate_grouped(backend, alltypes, df, result_fn, expected_fn):
     grouping_key_col = 'bigint_col'
 
@@ -1215,11 +1210,6 @@ def test_group_concat(
         )
     ],
 )
-@mark.broken(
-    ["oracle"],
-    raises=sa.exc.DatabaseError,
-    reason="ORA-00979: column must appear in the GROUP BY clause or be used in an aggregate function",
-)
 @mark.notimpl(
     ["pandas", "dask"],
     raises=NotImplementedError,
@@ -1264,11 +1254,6 @@ def test_topk_op(alltypes, df, result_fn, expected_fn):
         "(pydruid.db.exceptions.ProgrammingError) Plan validation failed "
         "(org.apache.calcite.tools.ValidationException): java.lang.NullPointerException"
     ),
-)
-@mark.broken(
-    ["oracle"],
-    raises=sa.exc.DatabaseError,
-    reason="ORA-00979: column must appear in the GROUP BY clause or be used in an aggregate function",
 )
 @mark.notimpl(
     ["pandas", "dask"],
@@ -1398,11 +1383,6 @@ def test_agg_sort(alltypes):
 
 @pytest.mark.xfail_version(
     polars=["polars==0.14.31"], reason="projection of scalars is broken"
-)
-@mark.broken(
-    ["oracle"],
-    raises=sa.exc.DatabaseError,
-    reason="ORA-00979: column must appear in the GROUP BY clause or be used in an aggregate function",
 )
 def test_filter(backend, alltypes, df):
     expr = (

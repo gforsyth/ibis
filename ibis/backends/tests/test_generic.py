@@ -1009,7 +1009,6 @@ def test_pivot_longer(backend):
     assert len(res.execute()) == len(expected)
 
 
-@pytest.mark.notimpl(["oracle"])
 @pytest.mark.notyet(["datafusion"], raises=com.OperationNotDefinedError)
 def test_pivot_wider(backend):
     diamonds = backend.diamonds
