@@ -4,25 +4,24 @@ import contextlib
 import os
 import subprocess
 from pathlib import Path
-from typing import Any, TextIO
+from typing import TYPE_CHECKING, Any, TextIO
 
 import pytest
 import sqlalchemy as sa
 
 import ibis
-from ibis.backends.tests.base import (
-    RoundHalfToEven,
-    ServiceBackendTest,
-    ServiceSpec,
-)
+from ibis.backends.tests.base import BackendTest, RoundHalfToEven
 
 ORACLE_USER = os.environ.get('IBIS_TEST_ORACLE_USER', 'ibis')
 ORACLE_PASS = os.environ.get('IBIS_TEST_ORACLE_PASSWORD', 'ibis')
 ORACLE_HOST = os.environ.get('IBIS_TEST_ORACLE_HOST', 'localhost')
 ORACLE_PORT = int(os.environ.get('IBIS_TEST_ORACLE_PORT', 1521))
 
+if TYPE_CHECKING:
+    import ibis.expr.types as ir
 
-class TestConf(ServiceBackendTest, RoundHalfToEven):
+
+class TestConf(BackendTest, RoundHalfToEven):
     check_dtype = False
     supports_window_operations = False
     returned_timestamp_unit = 's'
@@ -30,22 +29,6 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
     supports_arrays_outside_of_select = False
     native_bool = False
     supports_structs = False
-
-    def __init__(self, data_directory: Path) -> None:
-        super().__init__(data_directory)
-
-    @classmethod
-    def service_spec(cls, data_dir: Path):
-        files = [
-            data_dir.joinpath("csv", f"{name}.csv")
-            for name in ("diamonds", "batting", "awards_players", "functional_alltypes")
-        ]
-        ctl_files = [
-            data_dir.joinpath("..", "schema", "oracle", f"{name}.ctl")
-            for name in ("diamonds", "batting", "awards_players", "functional_alltypes")
-        ]
-        files += ctl_files
-        return ServiceSpec(name="oracle", data_volume="/opt/oracle/", files=files)
 
     @staticmethod
     def _load_data(
@@ -106,7 +89,7 @@ class TestConf(ServiceBackendTest, RoundHalfToEven):
                     "oracle",
                     "sqlldr",
                     f"{user}/{password}@{host}:{port}/{database}",
-                    f"control={ctl_file}",
+                    f"control=ctl/{ctl_file}",
                 ]
             )
 

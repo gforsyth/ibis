@@ -376,6 +376,9 @@ services:
     restart: on-failure
     networks:
       - oracle
+    volumes:
+      - $PWD/ci/ibis-testing-data/csv:/opt/oracle/csv:ro
+      - $PWD/ci/schema/oracle:/opt/oracle/ctl:ro
 
 networks:
   impala:
