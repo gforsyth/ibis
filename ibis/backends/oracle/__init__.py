@@ -37,6 +37,9 @@ class OracleExprTranslator(AlchemyExprTranslator):
         ops.Lead,
     )
 
+    _quote_column_names = True
+    _quote_table_names = True
+
 
 class OracleCompiler(AlchemyCompiler):
     translator_class = OracleExprTranslator
