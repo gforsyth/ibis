@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import contextlib
 import os
 import subprocess
@@ -50,7 +51,9 @@ class TestConf(BackendTest, RoundHalfToEven):
             Location of scripts defining schemas
         """
         database = "IBIS_TESTING"
-        with contextlib.suppress(Exception):
+
+        # suppress the exception if the user/pass/db combo already exists
+        with contextlib.suppress(subprocess.CalledProcessError):
             subprocess.check_call(
                 [
                     "docker",
@@ -75,23 +78,23 @@ class TestConf(BackendTest, RoundHalfToEven):
             )
 
         # then call sqlldr to ingest
-        for ctl_file in (
-            "diamonds.ctl",
-            "batting.ctl",
-            "awards_players.ctl",
-            "functional_alltypes.ctl",
-        ):
-            subprocess.check_call(
-                [
-                    "docker",
-                    "compose",
-                    "exec",
-                    "oracle",
-                    "sqlldr",
-                    f"{user}/{password}@{host}:{port}/{database}",
-                    f"control=ctl/{ctl_file}",
-                ]
-            )
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for fut in concurrent.futures.as_completed(
+                executor.submit(
+                    subprocess.check_call,
+                    [
+                        "docker",
+                        "compose",
+                        "exec",
+                        "oracle",
+                        "sqlldr",
+                        f"{user}/{password}@{host}:{port:d}/{database}",
+                        f"control=ctl/{ctl_file.name}",
+                    ],
+                )
+                for ctl_file in script_dir.joinpath("schema", "oracle").glob("*.ctl")
+            ):
+                fut.result()
 
     @staticmethod
     def connect(_: Path):
