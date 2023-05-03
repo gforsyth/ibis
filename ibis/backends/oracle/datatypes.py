@@ -38,6 +38,11 @@ def dtype(_, satype, nullable=True):
     return dt.Float64(nullable=nullable)
 
 
+# @to_sqla_type.register(OracleDialect, dt.Int16)
+# def oracle_sa_float16(_, itype):
+#     return sa.SmallInteger()
+
+
 @to_sqla_type.register(OracleDialect, dt.Float64)
 def oracle_sa_float64(_, itype):
     # XXX: what should `binary_precision` equal?

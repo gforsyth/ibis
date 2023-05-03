@@ -66,11 +66,14 @@ operation_registry.update(
         # String
         ops.StrRight: fixed_arity(lambda arg, nchars: sa.func.substr(arg, -nchars), 2),
         ops.StringJoin: _string_join,
+        # Generic
+        ops.Hash: unary(sa.func.ora_hash),
     }
 )
 
 _invalid_operations = {
     ops.StringFind,
+    ops.RandomScalar,
 }
 
 operation_registry = {

@@ -85,13 +85,13 @@ def test_boolean_literal(con, backend):
         param(
             ibis.NA.fillna(5),
             5,
-            marks=pytest.mark.notimpl(["mssql", "druid"]),
+            marks=pytest.mark.notimpl(["mssql", "druid", "oracle"]),
             id="na_fillna",
         ),
         param(
             L(5).fillna(10),
             5,
-            marks=pytest.mark.notimpl(["mssql", "druid"]),
+            marks=pytest.mark.notimpl(["mssql", "druid", "oracle"]),
             id="non_na_fillna",
         ),
         param(L(5).nullif(5), None, id="nullif_null"),
@@ -128,7 +128,7 @@ def test_scalar_fillna_nullif(con, expr, expected):
         ),
     ],
 )
-@pytest.mark.notimpl(["mssql", "druid"])
+@pytest.mark.notimpl(["mssql", "druid", "oracle"])
 def test_isna(backend, alltypes, col, filt):
     table = alltypes.select(
         nan_col=ibis.literal(np.nan), none_col=ibis.NA.cast("float64")
@@ -165,7 +165,7 @@ def test_isna(backend, alltypes, col, filt):
         ),
     ],
 )
-@pytest.mark.notimpl(["datafusion", "mssql", "druid"])
+@pytest.mark.notimpl(["datafusion", "mssql", "druid", "oracle"])
 def test_column_fillna(backend, alltypes, value):
     table = alltypes.mutate(missing=ibis.literal(value).cast("float64"))
     pd_table = table.execute()
@@ -294,6 +294,7 @@ def test_notin(backend, alltypes, sorted_df, column, elements):
     ],
 )
 @pytest.mark.notimpl(["druid"])
+@pytest.mark.notyet(["oracle"], reason="no bools")
 def test_filter(backend, alltypes, sorted_df, predicate_fn, expected_fn):
     sorted_alltypes = alltypes.order_by('id')
     table = sorted_alltypes[predicate_fn(sorted_alltypes)].order_by('id')
@@ -318,6 +319,7 @@ def test_filter(backend, alltypes, sorted_df, predicate_fn, expected_fn):
         "mssql",
         "trino",
         "druid",
+        "oracle",
     ]
 )
 def test_filter_with_window_op(backend, alltypes, sorted_df):
@@ -362,7 +364,7 @@ def test_case_where(backend, alltypes, df):
 
 
 # TODO: some of these are notimpl (datafusion) others are probably never
-@pytest.mark.notimpl(["datafusion", "mysql", "sqlite", "mssql", "druid"])
+@pytest.mark.notimpl(["datafusion", "mysql", "sqlite", "mssql", "druid", "oracle"])
 @pytest.mark.min_version(duckdb="0.3.3", reason="isnan/isinf unsupported")
 def test_select_filter_mutate(backend, alltypes, df):
     """Test that select, filter and mutate are executed in right order.
@@ -418,7 +420,7 @@ def test_table_fillna_invalid(alltypes):
         {"double_col": -1.5, "string_col": "missing"},
     ],
 )
-@pytest.mark.notimpl(["datafusion", "mssql", "clickhouse", "druid"])
+@pytest.mark.notimpl(["datafusion", "mssql", "clickhouse", "druid", "oracle"])
 def test_table_fillna_mapping(backend, alltypes, replacements):
     table = alltypes.mutate(
         int_col=alltypes.int_col.nullif(1),
@@ -433,7 +435,7 @@ def test_table_fillna_mapping(backend, alltypes, replacements):
     backend.assert_frame_equal(result, expected, check_dtype=False)
 
 
-@pytest.mark.notimpl(["datafusion", "mssql", "clickhouse", "druid"])
+@pytest.mark.notimpl(["datafusion", "mssql", "clickhouse", "druid", "oracle"])
 def test_table_fillna_scalar(backend, alltypes):
     table = alltypes.mutate(
         int_col=alltypes.int_col.nullif(1),
@@ -532,7 +534,7 @@ def test_order_by(backend, alltypes, df, key, df_kwargs):
     backend.assert_frame_equal(result, expected)
 
 
-@pytest.mark.notimpl(["dask", "pandas", "polars", "mssql", "druid"])
+@pytest.mark.notimpl(["dask", "pandas", "polars", "mssql", "druid", "oracle"])
 def test_order_by_random(alltypes):
     expr = alltypes.filter(_.id < 100).order_by(ibis.random()).limit(5)
     r1 = expr.execute()
@@ -660,7 +662,7 @@ def test_logical_negation_literal(con, expr, expected, op):
     "op",
     [
         toolz.identity,
-        param(invert, marks=pytest.mark.notimpl(["mssql"])),
+        param(invert, marks=pytest.mark.notimpl(["mssql", "oracle"])),
         param(neg, marks=pytest.mark.notimpl(["mssql"])),
     ],
 )
@@ -790,7 +792,7 @@ def test_int_column(alltypes):
     assert result.dtype == np.int8
 
 
-@pytest.mark.notimpl(["datafusion", "druid"])
+@pytest.mark.notimpl(["datafusion", "druid", "oracle"])
 @pytest.mark.never(
     ["bigquery", "sqlite", "snowflake"], reason="backend only implements int64"
 )
@@ -828,6 +830,7 @@ def test_exists(batting, awards_players, method_name):
         "pyspark",
         "polars",
         "druid",
+        "oracle",
     ],
     raises=com.OperationNotDefinedError,
 )
@@ -938,6 +941,7 @@ def test_memtable_construct(backend, con, monkeypatch):
     backend.assert_frame_equal(t.execute(), pa_t.to_pandas())
 
 
+@pytest.mark.notimpl(["oracle"])
 @pytest.mark.notimpl(
     ["dask", "datafusion", "pandas", "polars"],
     raises=NotImplementedError,
@@ -960,7 +964,7 @@ def test_many_subqueries(con, snapshot):
     snapshot.assert_match(str(ibis.to_sql(t3, dialect=con.name)), "out.sql")
 
 
-@pytest.mark.notimpl(["dask", "pandas"], raises=com.OperationNotDefinedError)
+@pytest.mark.notimpl(["dask", "pandas", "oracle"], raises=com.OperationNotDefinedError)
 @pytest.mark.notyet(["polars"], reason="polars doesn't expand > 1 explode")
 @pytest.mark.notimpl(["druid"], raises=AssertionError)
 @pytest.mark.notyet(
@@ -1006,6 +1010,7 @@ def test_pivot_longer(backend):
     assert len(res.execute()) == len(expected)
 
 
+@pytest.mark.notimpl(["oracle"])
 @pytest.mark.notyet(["datafusion"], raises=com.OperationNotDefinedError)
 def test_pivot_wider(backend):
     diamonds = backend.diamonds
@@ -1061,7 +1066,7 @@ def test_pivot_wider(backend):
     ],
 )
 @pytest.mark.notimpl(
-    ["druid", "impala"],
+    ["druid", "impala", "oracle"],
     raises=(NotImplementedError, sa.exc.ProgrammingError, com.OperationNotDefinedError),
     reason="arbitrary not implemented in the backend",
 )
@@ -1121,7 +1126,7 @@ def test_distinct_on_keep(backend, on, keep):
     ],
 )
 @pytest.mark.notimpl(
-    ["druid", "impala"],
+    ["druid", "impala", "oracle"],
     raises=(NotImplementedError, sa.exc.ProgrammingError, com.OperationNotDefinedError),
     reason="arbitrary not implemented in the backend",
 )
