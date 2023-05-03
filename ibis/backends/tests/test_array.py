@@ -31,7 +31,7 @@ pytestmark = [
         raises=Exception,
     ),
     pytest.mark.notyet(["impala"], reason="No array support", raises=Exception),
-    pytest.mark.notimpl(["druid"], raises=Exception),
+    pytest.mark.notimpl(["druid", "oracle"], raises=Exception),
 ]
 
 # NB: We don't check whether results are numpy arrays or lists because this
