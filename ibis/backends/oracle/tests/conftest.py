@@ -30,6 +30,7 @@ class TestConf(BackendTest, RoundHalfToEven):
     supports_arrays_outside_of_select = False
     native_bool = False
     supports_structs = False
+    supports_json = False
 
     @staticmethod
     def _load_data(
