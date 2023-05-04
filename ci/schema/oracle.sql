@@ -3,9 +3,9 @@
 -- says that NUMBER(9) -> NUMBER(9)
 -- says that BIGINT -> NUMBER(18);
 
-DROP TABLE "DIAMONDS";
+DROP TABLE "diamonds";
 
-CREATE TABLE "DIAMONDS" (
+CREATE TABLE "diamonds" (
     "carat" BINARY_FLOAT,
     "cut" VARCHAR2(255),
     "color" VARCHAR2(255),
@@ -18,9 +18,9 @@ CREATE TABLE "DIAMONDS" (
     "z" BINARY_FLOAT
 );
 
-DROP TABLE "BATTING";
+DROP TABLE "batting";
 
-CREATE TABLE "BATTING" (
+CREATE TABLE "batting" (
     "playerID" VARCHAR2(255),
     "yearID" NUMBER(18),
     "stint" NUMBER(18),
@@ -45,9 +45,9 @@ CREATE TABLE "BATTING" (
     "GIDP" NUMBER(18)
 );
 
-DROP TABLE "AWARDS_PLAYERS";
+DROP TABLE "awards_players";
 
-CREATE TABLE "AWARDS_PLAYERS" (
+CREATE TABLE "awards_players" (
     "playerID" VARCHAR2(255),
     "awardID" VARCHAR2(255),
     "yearID" NUMBER(18),
@@ -56,9 +56,9 @@ CREATE TABLE "AWARDS_PLAYERS" (
     "notes" VARCHAR2(255)
 ) ;
 
-DROP TABLE "FUNCTIONAL_ALLTYPES";
+DROP TABLE "functional_alltypes";
 
-CREATE TABLE "FUNCTIONAL_ALLTYPES" (
+CREATE TABLE "functional_alltypes" (
     "id" NUMBER(9),
     -- There is no boolean type in oracle
     -- and no recommendation on how to implement it
@@ -77,10 +77,10 @@ CREATE TABLE "FUNCTIONAL_ALLTYPES" (
     "month" NUMBER(9)
 );
 
-DROP TABLE "WIN";
+DROP TABLE "win";
 
-CREATE TABLE "WIN" ("g" VARCHAR2(8), "x" NUMBER(18), "y" NUMBER(18));
-INSERT INTO "WIN" VALUES
+CREATE TABLE "win" ("g" VARCHAR2(8), "x" NUMBER(18), "y" NUMBER(18));
+INSERT INTO "win" VALUES
     ('a', 0, 3),
     ('a', 1, 2),
     ('a', 2, 0),

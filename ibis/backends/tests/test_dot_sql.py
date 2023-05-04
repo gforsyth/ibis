@@ -10,8 +10,8 @@ table_dot_sql_notimpl = pytest.mark.notimpl(
 )
 dot_sql_notimpl = pytest.mark.notimpl(["datafusion"])
 dot_sql_notyet = pytest.mark.notyet(
-    ["snowflake"],
-    reason="snowflake column names are case insensitive",
+    ["snowflake", "oracle"],
+    reason="snowflake and oracle column names are case insensitive",
 )
 dot_sql_never = pytest.mark.never(
     ["dask", "pandas", "polars"],

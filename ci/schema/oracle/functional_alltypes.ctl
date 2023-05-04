@@ -1,7 +1,7 @@
 options (SKIP=1)
 load data
   infile '/opt/oracle/csv/functional_alltypes.csv'
-  into table functional_alltypes
+  into table "functional_alltypes"
   fields terminated by "," optionally enclosed by '"'
   TRAILING NULLCOLS
   ( "id",
