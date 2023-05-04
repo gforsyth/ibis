@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import warnings
 from typing import Any, Iterable
 
@@ -51,6 +52,7 @@ class Backend(BaseAlchemyBackend):
     name = 'oracle'
     compiler = OracleCompiler
     supports_create_or_replace = False
+    supports_temporary_tables = True
 
     def do_connect(
         self,
@@ -164,17 +166,23 @@ class Backend(BaseAlchemyBackend):
         temp: bool = False,
     ) -> sa.Table:
         table = super()._table_from_schema(
-            name, schema=schema, database=database, temp=temp
+            name,
+            schema=schema,
+            database=database,
+            temp=temp,
+            oracle_on_commit="PRESERVE ROWS" if temp else None,
         )
         if temp:
             # Oracle complains about this missing `GLOBAL` keyword so we add it
             # in here.  Not sure if this is always necessary or only some of the
             # time
             table._prefixes.insert(0, "GLOBAL")
+
         return table
 
-    # TODO: figure out when/how oracle drops temp tables
+    # # TODO: figure out when/how oracle drops temp tables
     # def list_tables(self, like=None, database=None):
     #     tables = self.inspector.get_table_names(schema=database)
     #     views = self.inspector.get_view_names(schema=database)
-    #     return self._filter_with_like(tables + views, like)
+    #     temp_tables = self.inspector.get_temp_table_names(schema=database)
+    #     return self._filter_with_like(tables + views + temp_tables, like)

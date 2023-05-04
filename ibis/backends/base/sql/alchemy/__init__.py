@@ -323,9 +323,10 @@ class BaseAlchemyBackend(BaseSQLBackend):
                         # 3. insert the temp table's data into the (re)created table
                         bind.execute(insert)
                 finally:
-                    with self.begin() as bind:
-                        # 4. clean up the temp table
-                        tmptable.drop(bind=bind)
+                    if not self.supports_temporary_tables:
+                        with self.begin() as bind:
+                            # 4. clean up the temp table
+                            tmptable.drop(bind=bind)
         else:
             with self.begin() as bind:
                 if overwrite:
@@ -367,7 +368,12 @@ class BaseAlchemyBackend(BaseSQLBackend):
         ]
 
     def _table_from_schema(
-        self, name: str, schema: sch.Schema, temp: bool = False, **_: Any
+        self,
+        name: str,
+        schema: sch.Schema,
+        temp: bool = False,
+        database=None,
+        **kwargs: Any,
     ) -> sa.Table:
         prefixes = []
         if temp:
@@ -379,6 +385,7 @@ class BaseAlchemyBackend(BaseSQLBackend):
             *columns,
             prefixes=prefixes,
             quote=self.compiler.translator_class._quote_table_names,
+            **kwargs,
         )
 
     def drop_table(
