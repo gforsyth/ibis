@@ -528,8 +528,38 @@ class Backend(BaseSQLBackend, CanCreateSchema, CanListDatabases):
         return self.list_schemas(like=like)
 
     def list_tables(
-        self, like: str | None = None, database: str | None = None
+        self,
+        like: str | None = None,
+        database: str | None = None,
+        schema: str | None = None,
     ) -> list[str]:
+        """List the tables in the database.
+
+        Parameters
+        ----------
+        like
+            A pattern to use for listing tables.
+        database
+            The database (project) to perform the list against.
+        schema
+            The schema (dataset) inside `database` to perform the list against.
+
+            ::: {.callout-warning}
+            ## `schema` refers to database hierarchy
+
+            The `schema` parameter does **not** refer to the column names and
+            types of `table`.
+            :::
+        """
+        if database is not None and schema is None:
+            raise com.UnsupportedArgumentError(
+                f"{self.name} cannot list tables only using `database` specifier. "
+                "Include a `schema` argument."
+            )
+        database = (
+            sg.exp.Table(catalog=database, db=schema).sql(dialect=self.name) or None
+        )
+
         project, dataset = self._parse_project_and_dataset(database)
         dataset_ref = bq.DatasetReference(project, dataset)
         result = [table.table_id for table in self.client.list_tables(dataset_ref)]
