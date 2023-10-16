@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 import sqlalchemy as sa
+import sqlglot as sg
 import toolz
 from trino.sqlalchemy.datatype import ROW as _ROW
 from trino.sqlalchemy.dialect import TrinoDialect
@@ -73,10 +74,39 @@ class Backend(AlchemyCrossSchemaBackend, AlchemyCanCreateSchema, CanListDatabase
         return self._scalar_query(sa.select(sa.literal_column("current_schema")))
 
     def list_tables(
-        self, like: str | None = None, database: str | None = None
+        self,
+        like: str | None = None,
+        database: str | None = None,
+        schema: str | None = None,
     ) -> list[str]:
+        """List the tables in the database.
+
+        Parameters
+        ----------
+        like
+            A pattern to use for listing tables.
+        database
+            The database (catalog) to perform the list against.
+        schema
+            The schema inside `database` to perform the list against.
+
+            ::: {.callout-warning}
+            ## `schema` refers to database hierarchy
+
+            The `schema` parameter does **not** refer to the column names and
+            types of `table`.
+            :::
+        """
         query = "SHOW TABLES"
 
+        if database is not None and schema is None:
+            raise com.UnsupportedArgumentError(
+                f"{self.name} cannot list tables only using `database` specifier. "
+                "Include a `schema` argument."
+            )
+        database = (
+            sg.exp.Table(catalog=database, db=schema).sql(dialect=self.name) or None
+        )
         if database is not None:
             query += f" IN {database}"
 
