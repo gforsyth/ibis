@@ -20,7 +20,9 @@ from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
 import sqlalchemy as sa
+import sqlglot as sg
 from packaging.version import parse as vparse
+from snowflake.sqlalchemy import ARRAY, DOUBLE, OBJECT, URL
 from sqlalchemy.ext.compiler import compiles
 
 import ibis
@@ -471,6 +473,48 @@ $$""".format(
             schemata = [row["name"] for row in con.exec_driver_sql(query).mappings()]
 
         return self._filter_with_like(schemata, like)
+
+    def list_tables(
+        self,
+        like: str | None = None,
+        database: str | None = None,
+        schema: str | None = None,
+    ) -> list[str]:
+        """List the tables in the database.
+
+        Parameters
+        ----------
+        like
+            A pattern to use for listing tables.
+        database
+            The database (catalog) to perform the list against.
+        schema
+            The schema inside `database` to perform the list against.
+
+            ::: {.callout-warning}
+            ## `schema` refers to database hierarchy
+
+            The `schema` parameter does **not** refer to the column names and
+            types of `table`.
+            :::
+        """
+        query = "SHOW TABLES"
+
+        if database is not None and schema is None:
+            raise com.UnsupportedArgumentError(
+                f"{self.name} cannot list tables only using `database` specifier. "
+                "Include a `schema` argument."
+            )
+        database = (
+            sg.exp.Table(catalog=database, db=schema).sql(dialect=self.name) or None
+        )
+        if database is not None:
+            query += f" IN {database}"
+
+        with self.begin() as con:
+            tables = [row["name"] for row in con.exec_driver_sql(query).mappings()]
+
+        return self._filter_with_like(tables, like=like)
 
     def _register_in_memory_table(self, op: ops.InMemoryTable) -> None:
         import pyarrow.parquet as pq
